@@ -64,7 +64,7 @@ function getFollowingUsers(req, res){
 		if (req.params.page) { //si en la url existe el campo page
 			page = req.params.page;
 		}else{
-			userId = req.params.id;
+			page = req.params.id;
 		}
 
 	}
