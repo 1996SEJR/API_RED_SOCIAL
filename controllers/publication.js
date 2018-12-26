@@ -160,7 +160,7 @@ function uploadImage(req, res){
 
 	if (req.files) { //si enviamos algun fichero
 		// image corresponde al elemento del html
-		var file_path = req.files.file.path; //path de la imagen que se quiere subir
+		var file_path = req.files.image.path; //path de la imagen que se quiere subir
 		var file_split = file_path.split('\\'); //cortar del path el nombre del archivo
 		var file_name = file_split[2]; //extrayendo el nombre de la imagen
 		var ext_split = file_name.split('\.'); 
