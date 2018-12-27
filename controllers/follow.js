@@ -58,12 +58,15 @@ function getFollowingUsers(req, res){
 	if (req.params.id && req.params.page) { // si en la url existen los 2 datos (id y page)
 		userId = req.params.id;
 		page = req.params.page;
-		//console.log('ey')
+		console.log('id y page')
 	}else{
 		//comprobar si llega la pagina por la url
 		if (req.params.page) { //si en la url existe el campo page
 			page = req.params.page;
+			console.log('if page')
+			
 		}else{
+			console.log('else page')			
 			page = req.params.id;
 		}
 
@@ -96,8 +99,6 @@ function getFollowingUsers(req, res){
 
 			});
 		});
-
-		
 	});
 }
 
@@ -181,10 +182,15 @@ function getFollowedUsers(req, res){
 			return res.status(404).send({message: 'No tienen ningun seguidor'});
 		}
 
-		return res.status(200).send({
-			total: total, //total de documentos q devuelve Follow.find
-			pages: Math.ceil(total/itemsPerPage), //redondear al entero superior el numero de paginas
-			follows //propiedad con todos los follows
+		followUserIds(userId).then((value)=>{
+			return res.status(200).send({
+				total: total, //total de documentos q devuelve Follow.find
+				pages: Math.ceil(total/itemsPerPage), //redondear al entero superior el numero de paginas
+				follows, //propiedad con todos los follows
+				users_following: value.following, //usuarios que estamos siguiendo
+				users_follow_me: value.followed //usuario que nos siguen
+
+			});
 		});
 	});
 }

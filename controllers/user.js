@@ -340,19 +340,19 @@ function uploadImage(req, res){
 	if (req.files) { //si enviamos algun fichero
 		// image corresponde al elemento del html
 		var file_path = req.files.image.path; //path de la imagen que se quiere subir
-		console.log(file_path);
+		//console.log(file_path);
 
 		var file_split = file_path.split('\\'); //cortar del path el nombre del archivo
-		console.log(file_split);
+		//console.log(file_split);
 
 		var file_name = file_split[2]; //extrayendo el nombre de la imagen
-		console.log(file_name);
+		//console.log(file_name);
 
 		var ext_split = file_name.split('\.'); 
-		console.log(ext_split);
+		//console.log(ext_split);
 
 		var file_ext = ext_split[1]; //obtener la extension del archivo
-		console.log(file_ext);
+		//console.log(file_ext);
 
 		if (userId != req.user.sub) { //el propio usuario podrá subir imagenes
 			//colocar return para evitar problemas con la cabecera
@@ -421,6 +421,8 @@ function getCounts(req, res){
 //funcion asincrona: obtener el numero de usuario q sigo y usuarios q me siguen
 async function getCountFollow(user_id){
 	try {
+		//collection.estimatedDocumentCount
+		//collection.countDocuments
         var following = await Follow.countDocuments({ user: user_id }).exec()
             .then((following) => {
                 return following;
@@ -445,6 +447,7 @@ async function getCountFollow(user_id){
                 return handleError(err);
             });
 
+		
         return {
             following: following,
             followed: followed,
