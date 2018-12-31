@@ -199,7 +199,7 @@ function getFollowedUsers(req, res){
 //Devolver usuario que sigo
 //Devolver usuarios que me siguen
 function getMyFollows(req, res){
-	var userId = req.user.sub;
+	var userId = req.user.sub;  // el usuario logueado
 
 	var find = Follow.find({user:userId}); //devolver usuarios que sigo
 

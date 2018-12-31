@@ -13,6 +13,18 @@ var jwt = require('../services/jwt'); //cargar el servicio
 var fs = require('fs'); //libreria file sistem de node
 var path = require('path'); //permite trabajar con rutas de sistemas de ficheros
 
+var nodemailer = require("nodemailer"); //libreria para el envio de correos
+var smtpTransport = nodemailer.createTransport({
+	service: "Gmail",
+	host: 'smtp.gmail.com',
+	port: 465,
+	secure: false,
+    auth: {
+        user: "ziquij96@gmail.com",
+        pass: "1996ezequieljr*"
+    }
+});
+var rand,mailOptions,host,link, email_usuario, url="http://localhost:4200/";
 
 function home(req, res){
 	res.status(200).send({
@@ -39,6 +51,7 @@ function saveUser(req, res){
 		user.email = params.email;
 		user.role = 'ROLE_USER';
 		user.image = null;
+		user.active = false;
 
 		//controlar usuario duplicados
 		User.find({ $or: [
@@ -71,6 +84,7 @@ function saveUser(req, res){
 						}
 
 						if (userStored) {
+							sendEmailVerification(user.email, req.get('host'));
 							res.status(200).send({
 								user: userStored
 							});
@@ -103,7 +117,7 @@ function loginUser(req, res){
 	var email = params.email;
 	var password = params.password;
 
-	User.findOne({email: email}, (err, user) => {
+	User.findOne({email: email, active: true}, (err, user) => {
 		if (err) {
 			return res.status(500).send({message:"Error en la petición"});
 		}
@@ -459,6 +473,99 @@ async function getCountFollow(user_id){
 }
 
 
+function sendEmailVerification(email, hostname){
+	//var params = req.body;
+	console.log('');
+	//console.log(params);
+	console.log('sendEmailVerification');
+	//console.log('');
+	
+	rand=Math.floor((Math.random() * 100) + 54);
+	host=url;
+	
+	/*console.log('');
+	console.log(host);
+	console.log('');*/
+
+	//link="http://"+hostname+"/api/verification-of-email?id="+rand;
+	link= url + "verify?id=" + rand;
+	email_usuario = email;
+	//console.log('');
+	//console.log(email_usuario);
+	//console.log('');
+	mailOptions={
+		//from: "ziquij96@gmail.com",
+		//to: "ziquij96@gmail.com",
+		to : email,
+		subject : "Please confirm your Email account",
+		html : "Hello,<br> Please Click on the link to verify your email.<br><a href="+link+">Click here to verify</a>"	
+	}
+
+	console.log(mailOptions);
+	smtpTransport.sendMail(mailOptions, function(error, response){
+		if(error){
+			console.log('ocurre un error');
+			console.log(error);
+			//res.end("error");
+			//return res.status(500).send({message: error});
+		}else{
+			//return res.status(200).send({message: "Message sent: " + response.message});
+			console.log(message)
+			console.log("Message sent: " + response.message);
+			//res.end("sent");
+		}
+	});
+}
+
+function verificationEmail(req, res){
+	//console.log(req.query.id);
+	//console.log('');
+	//console.log(email_usuario);
+	//console.log('');
+
+	//console.log(req.protocol+":/"+req.get('host'));
+	//if((req.protocol+"://"+req.get('host'))==("http://"+host)){
+		//console.log("Domain is matched. Information is from Authentic email");
+	if(req.query.id==rand){
+		console.log("email is verified");
+		//res.end("<h1>Email "+mailOptions.to+" is been Successfully verified");
+
+		User.find({email: email_usuario.toLowerCase()}).exec( (err, users) => {
+			if (err) {
+				return res.status(500).send({
+					message: 'Error en la petición de usuario '  + String(err)
+				}); 
+			}
+
+			if (users && users.length >= 1 ) {
+				console.log('')
+				console.log(users[0]._id)
+				console.log('')
+				User.findByIdAndUpdate(users[0]._id, { $set: {active: true}}, {new:true}, (err, userUpdated) => {
+					if (err) {
+						return res.status(500).send({message: 'Error en la petición'});
+					}
+					if (!userUpdated) {
+						return res.status(404).send({message: 'No se ha podido actualizar el usuario'});
+					}
+					return res.status(200).send({user: userUpdated});
+				});
+			}
+		});
+	}
+	else
+	{
+		console.log("email is not verified");
+		res.end("<h1>Bad Request</h1>");
+	}
+	//}
+	/*else
+	{
+		res.end("<h1>Request is from unknown source");
+	}*/
+}
+
+
 module.exports = {
 	home, 
 	pruebas,
@@ -469,5 +576,7 @@ module.exports = {
 	updateUser,
 	uploadImage,
 	getImageFile,
-	getCounts
+	getCounts,
+	sendEmailVerification,
+	verificationEmail
 }
