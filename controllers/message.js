@@ -49,7 +49,7 @@ function getReceivedMessage(req, res){
 
 	//el 2do parametro en el populate indica que
 	//solo se devuelvan dichos campos
-	Message.find({receiver: userId}).populate('emmiter', 'name username _id nick image').paginate(page, itemsPerPage, (err, messages, total)=>{
+	Message.find({receiver: userId}).populate('emmiter', 'name username _id nick image').sort('-created_at').paginate(page, itemsPerPage, (err, messages, total)=>{
 		if (err) {
 			return res.status(500).send({message: 'Error en el servidor'});
 		}
@@ -79,7 +79,7 @@ function getEmmitMessage(req, res){
 
 	//el 2do parametro en el populate indica que
 	//solo se devuelvan dichos campos
-	Message.find({emmiter: userId}).populate('emmiter receiver', 'name username _id nick image').paginate(page, itemsPerPage, (err, messages, total)=>{
+	Message.find({emmiter: userId}).populate('emmiter receiver', 'name username _id nick image').sort('-created_at').paginate(page, itemsPerPage, (err, messages, total)=>{
 		if (err) {
 			return res.status(500).send({message: 'Error en el servidor'});
 		}
@@ -100,12 +100,10 @@ function getEmmitMessage(req, res){
 //mensajes que no he leido
 function getUnviewedMessages(req, res){
 	var userId = req.user.sub;
-
 	Message.countDocuments({receiver:userId, viewed:'false'}).exec((err, count)=>{
 		if (err) {
 			return res.status(500).send({message: 'Error en el servidor'});
 		}
-
 		return res.status(200).send({
 			'unviewed': count
 		});
