@@ -24,7 +24,10 @@ var smtpTransport = nodemailer.createTransport({
         pass: "1996ezequieljr*"
     }
 });
-var rand,mailOptions,host,link, email_usuario, url="http://localhost:4200/";
+var rand,mailOptions,host,link, email_usuario;
+//var url="http://localhost:4200/";
+//var url="http://192.168.1.12:4200/";
+var url="http://192.168.1.5:4200/";
 
 function home(req, res){
 	res.status(200).send({
@@ -476,19 +479,17 @@ async function getCountFollow(user_id){
 function sendEmailVerification(email, hostname){
 	//var params = req.body;
 	console.log('');
-	//console.log(params);
+	console.log(hostname);
 	console.log('sendEmailVerification');
 	//console.log('');
 	
 	rand=Math.floor((Math.random() * 100) + 54);
-	host=url;
-	
-	/*console.log('');
-	console.log(host);
-	console.log('');*/
+	host=hostname.split(':');
+	console.log(host[0]);
+	link = 'http://' + host[0] + ':4200/';
 
-	//link="http://"+hostname+"/api/verification-of-email?id="+rand;
-	link= url + "verify?id=" + rand;
+	//link= url + "verify?id=" + rand;
+	link= link + "verify?id=" + rand;
 	email_usuario = email;
 	//console.log('');
 	//console.log(email_usuario);
@@ -497,11 +498,12 @@ function sendEmailVerification(email, hostname){
 		//from: "ziquij96@gmail.com",
 		//to: "ziquij96@gmail.com",
 		to : email,
-		subject : "Please confirm your Email account",
-		html : "Hello,<br> Please Click on the link to verify your email.<br><a href="+link+">Click here to verify</a>"	
+		subject : "Por favor confirme su cuenta de correo electrónico",
+		//html : "Hello,<br> Please Click on the link to verify your email.<br><a href="+link+">Click here to verify</a>"	
+		html: "<h3> Haga clic en el enlace para verificar su correo electrónico. <br> <a href="+link+"> Haga clic aquí para verificar </h3>"
 	}
 
-	console.log(mailOptions);
+	//console.log(mailOptions);
 	smtpTransport.sendMail(mailOptions, function(error, response){
 		if(error){
 			console.log('ocurre un error');
