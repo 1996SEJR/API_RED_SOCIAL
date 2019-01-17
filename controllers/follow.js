@@ -6,6 +6,8 @@ var User = require('../models/user');
 var Follow = require('../models/follow');
 
 function saveFollow(req, res){
+	//req.body = datos que viene desde un formulario
+	//req.params = datos que viene desde la url
 	var params = req.body;
 
 	var follow = new Follow();
@@ -69,7 +71,6 @@ function getFollowingUsers(req, res){
 			console.log('else page')			
 			page = req.params.id;
 		}
-
 	}
 	
 	var itemsPerPage = 4; //listar 4 usuarios por pagina
@@ -96,7 +97,6 @@ function getFollowingUsers(req, res){
 				follows, //propiedad con todos los follows
 				users_following: value.following, //usuarios que estamos siguiendo
 				users_follow_me: value.followed //usuario que nos siguen
-
 			});
 		});
 	});
@@ -189,7 +189,6 @@ function getFollowedUsers(req, res){
 				follows, //propiedad con todos los follows
 				users_following: value.following, //usuarios que estamos siguiendo
 				users_follow_me: value.followed //usuario que nos siguen
-
 			});
 		});
 	});

@@ -8,6 +8,7 @@ var mongoosePaginate = require('mongoose-pagination');
 var Publication = require('../models/publication');
 var User = require('../models/user');
 var Follow = require('../models/follow');
+var Like = require('../models/like');
 
 function probando(req, res){
 	res.status(200).send({
@@ -25,6 +26,7 @@ function savePublication(req, res){
 	var publication = new Publication();
 	publication.text = params.text;
 	publication.file = 'null';
+	publication.number_likes = 0;
 	publication.user = req.user.sub; //usuario logueado
 	publication.created_at = moment().unix();
 
@@ -75,7 +77,10 @@ function getPublications(req, res){
 			if (!publications) {
 				return res.status(404).send({message: 'No hay publicaciones'});
 			}
-			//console.log(publications);
+
+			var p=[];
+
+
 
 			return res.status(200).send({
 				total_items: total,
@@ -83,9 +88,12 @@ function getPublications(req, res){
 				page: page,
 				publications: publications
 			});
+			
 		});
 	});
 }
+
+
 
 //obtener publicaciones de un usuario en especifico
 function getPublicationsUser(req, res){
@@ -139,12 +147,13 @@ function getPublication(req, res){
 
 function deletePublication(req, res){
 	var publicationId = req.params.id;
-	console.log(req.user.sub);
+	//console.log(req.user.sub);
 
 	Publication.findOneAndDelete({'user': req.user.sub, '_id': publicationId}, (err, publication) => {
 		if (err) {
 			return res.status(500).send({message: 'Error al borrar la publicacion'});
 		}
+		console.log('deletePublication')
 		console.log(publication);
 		if (!publication) {
 			return res.status(404).send({message: 'La publicación no existe'});

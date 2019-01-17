@@ -310,6 +310,8 @@ function updateUser(req, res){
 	var userId = req.params.id;
 	var update = req.body;
 
+	console.log(update);
+
 	//borrar propiedad password
 	delete update.password;
 
