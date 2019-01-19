@@ -60,15 +60,15 @@ function getFollowingUsers(req, res){
 	if (req.params.id && req.params.page) { // si en la url existen los 2 datos (id y page)
 		userId = req.params.id;
 		page = req.params.page;
-		console.log('id y page')
+		//console.log('id y page')
 	}else{
 		//comprobar si llega la pagina por la url
 		if (req.params.page) { //si en la url existe el campo page
 			page = req.params.page;
-			console.log('if page')
+			//console.log('if page')
 			
 		}else{
-			console.log('else page')			
+			//console.log('else page')			
 			page = req.params.id;
 		}
 	}
