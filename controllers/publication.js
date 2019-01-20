@@ -19,9 +19,9 @@ function probando(req, res){
 function savePublication(req, res){
 	var params = req.body;
 
-	if (!params.text) {
+	/*if (!params.text) {
 		return res.status(200).send({message: 'Debes enviar un texto'});
-	}
+	}*/
 
 	var publication = new Publication();
 	publication.text = params.text;

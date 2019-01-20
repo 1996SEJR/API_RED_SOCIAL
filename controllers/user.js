@@ -276,6 +276,7 @@ async function followUserIds(user_id){
 function getUsers(req, res){
 	var identify_user_id = req.user.sub;//recoger el id del usuario logueado
 	var page = 1;
+	var buscar = req.params.buscar;
 	
 	if (req.params.page) {
 		page = req.params.page;
@@ -283,7 +284,7 @@ function getUsers(req, res){
 
 	var itemsPerPage = 6; //cantidad de usuarios que se listaran por pagina
 
-	User.find().sort('_id').paginate(page, itemsPerPage, (err, users, total) => {
+	User.find({'active': true}).sort('_id').paginate(page, itemsPerPage, (err, users, total) => {
 		if (err) {
 			return res.status(500).send({message: 'Error en la petición'});
 		}
@@ -304,6 +305,41 @@ function getUsers(req, res){
 	});
 }
 
+
+//DEVOLVER UN LISTADO DE USUARIOS DE ACUERDO A LA BUSQUEDA
+function searchUsers(req, res){
+	var identify_user_id = req.user.sub;//recoger el id del usuario logueado
+	var page = 1;
+	var search = req.params.search;
+	console.log(search)
+	if (req.params.page) {
+		page = req.params.page;
+	}
+
+	var itemsPerPage = 6; //cantidad de usuarios que se listaran por pagina
+
+	//User.find({'active': true, $or: [ { 'name': /.*buscar.*/ }, { 'username': /.*buscar.*/  } ]}).sort('_id').paginate(page, itemsPerPage, (err, users, total) => {
+	User.find({'active': true, $or: [ { 'name': new RegExp(search, 'i') }, { 'username': new RegExp(search, 'i') } ]}).sort('_id').paginate(page, itemsPerPage, (err, users, total) => {
+		if (err) {
+			return res.status(500).send({message: 'Error en la petición'});
+		}
+		console.log(users)
+
+		if (!users) {
+			return res.status(404).send({message: 'No hay usuario disponibles'});			
+		}
+
+		followUserIds(identify_user_id).then((value)=>{
+			return res.status(200).send({
+				users,
+				users_following: value.following, //usuarios que estamos siguiendo
+				users_follow_me: value.followed, //usuario que nos siguen
+				total,
+				pages: Math.ceil(total/itemsPerPage)
+			});
+		});
+	});
+}
 
 //Edición de datos de usuario
 function updateUser(req, res){
@@ -577,6 +613,7 @@ module.exports = {
 	loginUser,
 	getUser,
 	getUsers,
+	searchUsers,
 	updateUser,
 	uploadImage,
 	getImageFile,
