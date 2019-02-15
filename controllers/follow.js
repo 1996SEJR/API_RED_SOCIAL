@@ -55,7 +55,6 @@ function deleteFollow(req, res){
 function getFollowingUsers(req, res){ 
 	var userId = req.user.sub;//recoger el usuario logueado
 	var page = 1;
-
 	//comprobar si llega por la url un id de usuario
 	if (req.params.id && req.params.page) { // si en la url existen los 2 datos (id y page)
 		userId = req.params.id;
@@ -66,29 +65,21 @@ function getFollowingUsers(req, res){
 		if (req.params.page) { //si en la url existe el campo page
 			page = req.params.page;
 			//console.log('if page')
-			
 		}else{
 			//console.log('else page')			
 			page = req.params.id;
 		}
-	}
-	
+	}	
 	var itemsPerPage = 4; //listar 4 usuarios por pagina
-
 	//buscar todos follows cuyo usuario sea userId 
 	//populate: mostrar los datos del objeto followed
 	Follow.find({user: userId}).populate({path: 'followed'}).paginate(page, itemsPerPage, (err, follows, total)=>{
 		if (err) {
 			return res.status(500).send({message: 'Error en el servidor'});
 		}
-
 		if (!follows) {
 			return res.status(404).send({message: 'No estas siguiendo a ningun usuario'});
 		}
-		//console.log('follows')
-		//console.log(follows)
-
-
 		//followUserIds(req.user.sub).then((value)=>{
 		followUserIds(userId).then((value)=>{
 			return res.status(200).send({

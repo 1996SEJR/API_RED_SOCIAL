@@ -15,6 +15,11 @@ var md_upload = multipart({uploadDir: './uploads/users'}); //aqui se guardarán 
 api.get('/home', UserController.home);
 api.get('/pruebas', md_auth.ensureAuth , UserController.pruebas);
 api.post('/register', UserController.saveUser);
+api.post('/recuperar_cuenta', UserController.sendEmailRecuperarCuenta);
+api.post('/restablecer_cuenta', UserController.restablecerCuenta);
+api.post('/cambiar_clave/:id/:old_password/:new_password', UserController.changePassword);
+
+
 //api.post('/send-email-to-verification', UserController.sendEmailVerification);
 api.get('/verification-of-email', UserController.verificationEmail);
 api.post('/login', UserController.loginUser);

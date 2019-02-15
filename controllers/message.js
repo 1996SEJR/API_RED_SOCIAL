@@ -113,7 +113,7 @@ function getUnviewedMessages(req, res){
 
 
 //actualizar mensajes sin leer
-function setViewedMessages(req, res){
+function setViewedMessages2(req, res){
 	var userId = req.user.sub;
 
 	Message.update({receiver:userId, viewed:'false'}, {viewed:'true'}, {"multi": true}, (err, messagesUpdated)=>{
@@ -127,11 +127,116 @@ function setViewedMessages(req, res){
 	});
 }
 
+function setViewedMessages(req, res){
+	var userId = req.user.sub;
+	var id_emmiter = req.params.id; //id de la otra persona
+
+	Message.update({emmiter: id_emmiter, receiver: userId, viewed:'false'}, {viewed:'true'}, {"multi": true}, (err, messagesUpdated)=>{
+		if (err) {
+			return res.status(500).send({message: 'Error en la petición'});
+		}
+
+		return res.status(200).send({
+			messages: messagesUpdated
+		});
+	});
+}
+
+//mensajes enviados y recibidos
+function getAllMessages(req, res){
+	var userId = req.user.sub;
+
+	var messages_clean = []; //ultimo mensaje entre emisor y receptor
+	var message_save = true;
+	var messages_no_viewed = 0;
+
+	Message.find({ $or: [
+		{emmiter: userId},
+		{receiver: userId}
+		]}).sort('-created_at').populate('emmiter receiver', '_id name username _id nick image').exec(function (err, allMessages) {
+			if(err){
+				return res.status(500).send({message: 'Error en el servidor ...'});
+			}
+
+			//console.log(allMessages[0].emmiter._id.toString() )
+			
+			allMessages.forEach((doc)=>{
+				message_save = true;
+				console.log('----------------')
+				console.log(doc)
+				console.log('---------------------')
+				if(messages_clean.length != 0){
+					for (let index = 0; index < messages_clean.length; index++) {
+						if( (doc.emmiter._id.toString() == messages_clean[index].emmiter._id.toString() && 
+						doc.receiver._id.toString() == messages_clean[index].receiver._id.toString()) || 
+						(doc.receiver._id.toString() == messages_clean[index].emmiter._id.toString() && 
+						doc.emmiter._id.toString() == messages_clean[index].receiver._id.toString()) ){
+							message_save = false;
+						}
+					}
+				}else{
+					//messages_clean.push(doc)
+					message_save = true;
+				}
+				if(message_save){
+					messages_clean.push(doc)	
+					if (doc.viewed == false || doc.viewed == "false") {
+						messages_no_viewed = messages_no_viewed + 1;
+					}
+				}
+			});
+
+			return res.status(200).send({
+				allMessages,
+				messages_no_viewed,
+				lastMessage: messages_clean
+			});
+	});
+}
+
+//interacción de mensajes con una personas
+function getMessagesOnePeople(req, res){
+	var userId = req.user.sub;
+	var id_other = req.params.id; //id de la otra persona
+	var name_other;
+	var cont = 0;
+
+	Message.find({
+		$or: [
+			{ $and: [{emmiter: userId}, {receiver: id_other}] },
+			{ $and: [{receiver: userId}, {emmiter: id_other}] }
+		]
+		}).sort('created_at').populate('emmiter receiver', '_id name username _id nick image').exec(function (err, allMessages) {
+			if(err){
+				return res.status(500).send({message: 'Error en el servidor -> getMessagesOnePeople'});
+			}
+
+			//console.log(allMessages[0].emmiter)
+
+			if(allMessages.length > 0){
+				if(allMessages[cont].emmiter._id != userId){
+					name_other = allMessages[cont].emmiter.name + ' ' + allMessages[cont].emmiter.username;
+				}else{
+					name_other = allMessages[cont].receiver.name + ' ' + allMessages[cont].receiver.username;
+				}
+			}
+			//console.log(name_other)
+
+			return res.status(200).send({
+				allMessages,
+				name_other,
+				id_other
+			});
+	});
+}
+
 module.exports = {
 	probando,
 	saveMessage,
 	getReceivedMessage,
 	getEmmitMessage,
 	getUnviewedMessages,
-	setViewedMessages
+	setViewedMessages,
+	getAllMessages,
+	getMessagesOnePeople
 }

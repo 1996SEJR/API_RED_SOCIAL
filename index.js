@@ -21,7 +21,7 @@ var port = 3800;
 mongoose.Promise = global.Promise;
 //mongoose2.Promise = global.Promise;
 
-mongoose.connect('mongodb://localhost:27017/curso_red_social',  {useNewUrlParser: true })
+mongoose.connect('mongodb://localhost:27017/MyFriends',  {useNewUrlParser: true })
 //mongodb://<dbuser>:<dbpassword>@ds161134.mlab.com:61134/curso_red_social
 //mongoose.connect('mongodb://SEJR:1996SEJR-jr*@ds161134.mlab.com:61134/curso_red_social',  {useNewUrlParser: true })
 	.then(() => {

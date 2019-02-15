@@ -16,6 +16,7 @@ var follow_routes = require('./routes/follow');
 var publication_routes = require('./routes/publication');
 var message_routes = require('./routes/message');
 var like_routes = require('./routes/like');
+var commentary_routes = require('./routes/commentary');
 
 //cargar middlewares
 app.use(bodyParser.urlencoded({extended:false})); //crear un middleware (middleware: metodo que se ejecuta antes de que llegue a un controlador)
@@ -28,7 +29,6 @@ app.use((req, res, next) => {
     res.header('Access-Control-Allow-Headers', 'Authorization, X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Allow-Request-Method');
     res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
     res.header('Allow', 'GET, POST, OPTIONS, PUT, DELETE');
- 
     next();
 });
 
@@ -39,6 +39,7 @@ app.use('/api', follow_routes);
 app.use('/api', publication_routes);
 app.use('/api', message_routes);
 app.use('/api', like_routes);
+app.use('/api', commentary_routes);
 
 //app.use(user_routes);
 

@@ -18,7 +18,7 @@ var smtpTransport = nodemailer.createTransport({
 	service: "Gmail",
 	host: 'smtp.gmail.com',
 	port: 465,
-	secure: false,
+	secure: true,
     auth: {
         user: "ziquij96@gmail.com",
         pass: "1996ezequieljr*"
@@ -27,7 +27,7 @@ var smtpTransport = nodemailer.createTransport({
 var rand,mailOptions,host,link, email_usuario;
 //var url="http://localhost:4200/";
 //var url="http://192.168.1.12:4200/";
-var url="http://192.168.1.5:4200/";
+//var url="http://192.168.1.5:4200/";
 
 function home(req, res){
 	res.status(200).send({
@@ -78,26 +78,26 @@ function saveUser(req, res){
 					bcrypt.hash(params.password, null, null, (err, hash) => {
 					user.password = hash;
 
-					//guardar usuario
-					user.save((err, userStored) => {
-						if (err) {
-							return res.status(500).send({
-								message: 'Error al guardar el usuario ' + String(err)
-							});
-						}
+						//guardar usuario
+						user.save((err, userStored) => {
+							if (err) {
+								return res.status(500).send({
+									message: 'Error al guardar el usuario ' + String(err)
+								});
+							}
 
-						if (userStored) {
-							sendEmailVerification(user.email, req.get('host'));
-							res.status(200).send({
-								user: userStored
-							});
-						}else{
-							res.status(404).send({
-								message: 'No se ha registrado el usuario'
-							});
-						}
+							if (userStored) {
+								sendEmailVerification(user.email, req.get('host'));
+								res.status(200).send({
+									user: userStored
+								});
+							}else{
+								res.status(404).send({
+									message: 'No se ha registrado el usuario'
+								});
+							}
+						});
 					});
-				});
 				}
 			});
 	}else{
@@ -245,8 +245,6 @@ async function followUserIds(user_id){
             .catch((err) => {
                 return handleError(err);
             });
-
-
 		/*var followed = await Follow.find({'followed': user_id}).select({'_id':0, '__v':0, 'follow':0 }).exec((err, follows)=>{
 			return follows;
 		});*/
@@ -515,26 +513,18 @@ async function getCountFollow(user_id){
 
 
 function sendEmailVerification(email, hostname){
-	//var params = req.body;
-	console.log('');
+	/*console.log('');
 	console.log(hostname);
-	console.log('sendEmailVerification');
-	//console.log('');
+	console.log('sendEmailVerification');*/
 	
 	rand=Math.floor((Math.random() * 100) + 54);
 	host=hostname.split(':');
 	console.log(host[0]);
 	link = 'http://' + host[0] + ':4200/';
 
-	//link= url + "verify?id=" + rand;
 	link= link + "verify?id=" + rand;
 	email_usuario = email;
-	//console.log('');
-	//console.log(email_usuario);
-	//console.log('');
 	mailOptions={
-		//from: "ziquij96@gmail.com",
-		//to: "ziquij96@gmail.com",
 		to : email,
 		subject : "Por favor confirme su cuenta de correo electrónico",
 		//html : "Hello,<br> Please Click on the link to verify your email.<br><a href="+link+">Click here to verify</a>"	
@@ -546,13 +536,9 @@ function sendEmailVerification(email, hostname){
 		if(error){
 			console.log('ocurre un error');
 			console.log(error);
-			//res.end("error");
-			//return res.status(500).send({message: error});
 		}else{
-			//return res.status(200).send({message: "Message sent: " + response.message});
 			console.log(message)
 			console.log("Message sent: " + response.message);
-			//res.end("sent");
 		}
 	});
 }
@@ -567,8 +553,7 @@ function verificationEmail(req, res){
 	//if((req.protocol+"://"+req.get('host'))==("http://"+host)){
 		//console.log("Domain is matched. Information is from Authentic email");
 	if(req.query.id==rand){
-		console.log("email is verified");
-		//res.end("<h1>Email "+mailOptions.to+" is been Successfully verified");
+		//console.log("email is verified");
 
 		User.find({email: email_usuario.toLowerCase()}).exec( (err, users) => {
 			if (err) {
@@ -578,9 +563,9 @@ function verificationEmail(req, res){
 			}
 
 			if (users && users.length >= 1 ) {
-				console.log('')
+				/*console.log('')
 				console.log(users[0]._id)
-				console.log('')
+				console.log('')*/
 				User.findByIdAndUpdate(users[0]._id, { $set: {active: true}}, {new:true}, (err, userUpdated) => {
 					if (err) {
 						return res.status(500).send({message: 'Error en la petición'});
@@ -596,13 +581,159 @@ function verificationEmail(req, res){
 	else
 	{
 		console.log("email is not verified");
-		res.end("<h1>Bad Request</h1>");
+		return res.status(404).send({message: 'email is not verified'});
+		//res.end("<h1>Bad Request</h1>");
 	}
-	//}
-	/*else
+}
+
+
+//RECUPERAR CUENTA
+function sendEmailRecuperarCuenta(req, res){
+	var params = req.body;
+	var email = params.email;
+	var hostname = req.get('host')
+
+	rand = Math.floor((Math.random() * 100) + 54);
+	host = hostname.split(':');
+	link = 'http://' + host[0] + ':4200/';
+
+	console.log(params)
+	console.log(email)
+	console.log(hostname)
+	
+
+	link = link + "restablecer_cuenta?id=" + rand;
+	console.log(link)
+	//email_usuario = email;
+	mailOptions = {
+		to : email,
+		subject : "Restrablecer contraseña",
+		html: "<h3> Haga clic en el enlace para restablecer su contraseña. <br> <a href="+link+"> Haga clic aquí </h3>"
+	}
+	smtpTransport.sendMail(mailOptions, function(error, response){
+		if(error){
+			console.log('ocurre un error sendEmailRecuperarCuenta');
+			console.log(error);
+			return res.status(500).send({message: 'Error en la petición sendEmailRecuperarCuenta'});
+		}else{
+			//console.log(message)
+			//console.log("Message sent: " + response);
+			return res.status(200).send({ok: 'mensaje enviado'});
+		}
+	});
+}
+
+function restablecerCuenta(req, res){
+	var params = req.body;
+	var email = params.email;
+	var password;
+
+	console.log(req.query.id)
+
+	if(req.query.id==rand){
+		User.find({email: email}).exec( (err, users) => {
+			if (err) {
+				return res.status(500).send({
+					message: 'Error en la petición de recuperarCuenta .. '  + String(err)
+				}); 
+			}
+
+			//console.log(users)
+			//console.log(users.email)
+
+			if (users && users.length >= 1 ) {
+
+				//encriptar password
+				bcrypt.hash(params.password, null, null, (err, hash) => {
+					password = hash;
+
+					User.findByIdAndUpdate(users[0]._id, { $set: {password: password}}, {new:true}, (err, userUpdated) => {
+						if (err) {
+							return res.status(500).send({message: 'Error en la petición recuperarCuenta ...'});
+						}
+						if (!userUpdated) {
+							return res.status(404).send({message: 'No se ha podido restablecer la cuenta'});
+						}
+						return res.status(200).send({user: userUpdated});
+					});
+				});
+			}
+		});
+	}
+	else
 	{
-		res.end("<h1>Request is from unknown source");
-	}*/
+		console.log("email is not verified");
+		return res.status(200).send({message: 'email is not verified'});
+		//res.end("<h1>Bad Request</h1>");
+	}
+}
+
+
+//Actualizar clave
+function changePassword(req, res){
+	var old_password = req.params.old_password;
+	var new_password = req.params.new_password;
+	var userId = req.params.id;
+
+	console.log(old_password)
+	console.log(new_password)
+	console.log(userId)
+
+	User.findOne({_id: userId, active: true}, (err, user) => {
+		if (err) {
+			return res.status(500).send({message:"Error en la petición"});
+		}
+
+		if (user) {
+			//old_password no está encriptada
+			//user.password está encriptada
+			//para comparar la contraseña usar bcrypt.compare ya que compara una password encriptada (de la BD) y otra sin encriptar (que viene desde el formulario)
+			bcrypt.compare(old_password, user.password, (err, check) => {
+				if (check) {
+					/*if (params.gettoken) {
+						//generar y devolver token
+						return res.status(200).send({
+							token: jwt.createToken(user)
+						});
+
+					}else{
+						//devolver datos de usuario
+						user.password = undefined; //no mostrar el password
+						return res.status(200).send({user});					
+					}*/
+
+					//encriptar password
+					bcrypt.hash(new_password, null, null, (err, hash) => {
+						user.password = hash;
+	
+							//guardar usuario
+							user.save((err, userStored) => {
+								if (err) {
+									return res.status(500).send({
+										message: 'Error al guardar el usuario ' + String(err)
+									});
+								}
+	
+								if (userStored) {
+									sendEmailVerification(user.email, req.get('host'));
+									res.status(200).send({
+										user: userStored
+									});
+								}else{
+									res.status(404).send({
+										message: 'No se ha registrado el usuario'
+									});
+								}
+							});
+						});
+				}else{
+					return res.status(404).send({message: "El usuario no se ha podido identificar"});
+				}
+			});
+		}else{
+			return res.status(404).send({message: "El usuario no se ha podido identificar!!!"});
+		}
+	});
 }
 
 
@@ -619,5 +750,8 @@ module.exports = {
 	getImageFile,
 	getCounts,
 	sendEmailVerification,
-	verificationEmail
+	verificationEmail,
+	sendEmailRecuperarCuenta,
+	restablecerCuenta,
+	changePassword
 }

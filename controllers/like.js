@@ -3,7 +3,6 @@
 var moment = require('moment');
 var mongoosePaginate = require('mongoose-pagination');
 
-var User = require('../models/user');
 var Publication = require('../models/publication');
 var Like = require('../models/like');
 
@@ -30,7 +29,6 @@ function saveLike(req, res){
 			//new:false => muestra info del usuario desactualizada
 
 			Like.countDocuments({ publication: like.publication}, function (err, count) {
-
 				Publication.findByIdAndUpdate(like.publication, { number_likes: count }, {new:true}, (err, userUpdated) => {
 					if (err) {
 						return res.status(500).send({message: 'Error en la petición'});
@@ -57,16 +55,11 @@ function deleteLike(req, res){
 	var userId = req.user.sub;
 	var publication = req.params.id;
 
-	console.log('user: ' + userId)
-	console.log('publicacion: ' + publication)
-
 	Like.findOneAndDelete({'user': userId, 'publication': publication}, (err, like) => {
 		if (err) {
 			return res.status(500).send({message: 'Error al dejar de dar like'});
 		}
 
-		console.log(like);
-		
 		if (!like) {
 			console.log('ho hay ningun like')
 			return res.status(200).send({message: 'Usted no le gusta este comentario'});
@@ -79,8 +72,6 @@ function deleteLike(req, res){
 						return res.status(500).send({message: 'Error en la petición'});
 					}
 					
-					console.log('deletelike')
-					console.log(userUpdated)
 					if (!userUpdated) {
 						return res.status(404).send({message: 'No se ha podido actualizar la publicacion'});
 					}
@@ -96,7 +87,6 @@ function deleteLike(req, res){
 }
 
 
-//listado paginado de los usuarios que estamos siguiendo
 function getLikingUser(req, res){ 
 	var userId = req.user.sub;//recoger el usuario logueado
 	var page = 1;
@@ -130,8 +120,7 @@ function getLikingUser(req, res){
 			return res.status(404).send({message: 'No has dado ningun like'});
 		}
 		//console.log('follows')
-		//console.log(likes)
-
+		console.log(likes)
 
 		//followUserIds(req.user.sub).then((value)=>{
 		likeUserIds(userId).then((value)=>{
@@ -139,7 +128,7 @@ function getLikingUser(req, res){
 				total: total, //total de documentos q devuelve Follow.find
 				pages: Math.ceil(total/itemsPerPage), //redondear al entero superior el numero de paginas
 				likes, //propiedad con todos los likes
-				publication_like: value.liking //publicaciones que nos gustan
+				publication_like: value.liking //id de las publicaciones que nos gustan
 			});
 		});
 	});
@@ -161,6 +150,7 @@ async function likeUserIds(user_id){
 			liking_clean.push(like.publication);
 		});
 
+		console.log(liking_clean)
 
 		//console.log('following')
 		//console.log(following_clean)

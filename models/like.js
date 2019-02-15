@@ -8,8 +8,8 @@ var mongoose = require('mongoose');
 
 var Schema = mongoose.Schema;
 var LikeSchema = Schema({
-	user: { type: Schema.ObjectId, ref:'User' }, //usuario que sigue
-	publication: { type: Schema.ObjectId, ref:'Publication' } //usuario seguido
+	user: { type: Schema.ObjectId, ref:'User' }, 
+	publication: { type: Schema.ObjectId, ref:'Publication' } 
 });
 
 
